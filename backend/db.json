@@ -1,0 +1,16 @@
+{
+  "users": [],
+  "drivers": [],
+  "admins": [
+    {
+      "id": "admin-001",
+      "username": "admin",
+      "password": "admin123",
+      "email": "admin@ridehail.com",
+      "role": "super_admin",
+      "active": true
+    }
+  ],
+  "trips": [],
+  "vehicles": []
+}
