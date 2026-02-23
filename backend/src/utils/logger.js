@@ -41,23 +41,34 @@ const logger = winston.createLogger({
   ],
 });
 
-// Add file transports in production
-if (process.env.NODE_ENV === 'production') {
-  logger.add(
-    new winston.transports.File({
-      filename: path.join(logDir, 'error.log'),
-      level: 'error',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    })
-  );
-  logger.add(
-    new winston.transports.File({
-      filename: path.join(logDir, 'combined.log'),
-      maxsize: 5242880,
-      maxFiles: 5,
-    })
-  );
+// Add file transports only in non-serverless environments
+// Vercel and other serverless platforms don't support file system writes
+if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
+  try {
+    const fs = require('fs');
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+    
+    logger.add(
+      new winston.transports.File({
+        filename: path.join(logDir, 'error.log'),
+        level: 'error',
+        maxsize: 5242880, // 5MB
+        maxFiles: 5,
+      })
+    );
+    logger.add(
+      new winston.transports.File({
+        filename: path.join(logDir, 'combined.log'),
+        maxsize: 5242880,
+        maxFiles: 5,
+      })
+    );
+  } catch (error) {
+    // Silently fail if file logging is not available
+    console.warn('File logging not available in serverless environment');
+  }
 }
 
 // Create a stream for Morgan
